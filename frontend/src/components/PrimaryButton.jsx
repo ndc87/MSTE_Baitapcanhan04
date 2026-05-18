@@ -4,14 +4,21 @@ const PrimaryButton = ({ children, onClick, type = 'button', isLoading = false, 
   return (
     <button
       type={type}
-      className={`btn btn-primary w-100 py-2 fw-semibold ${className}`}
+      className={`btn fw-semibold w-100 ${className}`}
       onClick={onClick}
       disabled={isLoading}
-      style={{ backgroundColor: '#2563eb', borderColor: '#2563eb' }}
+      style={{
+        backgroundColor: '#10b981',
+        borderColor: '#10b981',
+        color: 'white',
+        transition: 'background-color 0.2s',
+      }}
+      onMouseEnter={e => e.currentTarget.style.backgroundColor = '#059669'}
+      onMouseLeave={e => e.currentTarget.style.backgroundColor = '#10b981'}
     >
-      {isLoading ? (
-        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-      ) : null}
+      {isLoading && (
+        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
+      )}
       {children}
     </button>
   );
