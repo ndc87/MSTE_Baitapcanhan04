@@ -3,7 +3,7 @@ import { X, SlidersHorizontal } from 'lucide-react';
 import FilterPanel from './FilterPanel';
 import CTAButton from '../ui/CTAButton';
 
-const FilterDrawer = ({ isOpen, onClose, filters, onChange, onReset, activeCount }) => {
+const FilterDrawer = ({ isOpen, onClose, filters, onChange, onReset, activeCount, categories }) => {
   if (!isOpen) return null;
 
   return (
@@ -44,7 +44,7 @@ const FilterDrawer = ({ isOpen, onClose, filters, onChange, onReset, activeCount
 
         {/* Filter content — reuse FilterPanel layout but without sticky */}
         <div className="px-5 py-4 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 140px)' }}>
-          <FilterPanel filters={filters} onChange={onChange} onReset={onReset} />
+          <FilterPanel filters={filters} onChange={onChange} onReset={onReset} categories={categories} />
         </div>
 
         {/* Footer CTA */}

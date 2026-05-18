@@ -3,9 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Zap, ChevronRight } from 'lucide-react';
 import Layout from '../components/layout/Layout';
 import ProductCard from '../components/product/ProductCard';
+import HorizontalProductCarousel from '../components/product/HorizontalProductCarousel';
 import CTAButton from '../components/ui/CTAButton';
-import { MOCK_PRODUCTS } from '../mock/products';
-import { MOCK_CATEGORIES } from '../mock/categories';
+import api from '../services/api';
 
 /* ── Flash Sale Countdown ────────────────────────────────── */
 function FlashSaleCountdown({ endsAt }) {
@@ -46,11 +46,62 @@ function FlashSaleCountdown({ endsAt }) {
 
 /* ── Home Page ───────────────────────────────────────────── */
 const SALE_END = Date.now() + 6 * 3600 * 1000; // 6 hours from now
-const FEATURED = MOCK_PRODUCTS.filter((p) => p.tags.includes('featured')).slice(0, 4);
-const SALE_PRODUCTS = MOCK_PRODUCTS.filter((p) => p.tags.includes('sale')).slice(0, 6);
+
+const categoryIcon = (slug) => {
+  const map = {
+    'dong-phuc': '👕',
+    'sach-giao-trinh': '📚',
+    'van-phong-pham': '✏️',
+    'qua-luu-niem': '🎁',
+    'do-dien-tu': '🖱️'
+  };
+  return map[slug] || '🛍️';
+};
 
 const Home = () => {
   const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);
+  const [bestSellers, setBestSellers] = useState([]);
+  const [mostViewed, setMostViewed] = useState([]);
+  const [loadingTop, setLoadingTop] = useState(true);
+  const [categoryError, setCategoryError] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchHomeData = async () => {
+      setLoadingTop(true);
+      setCategoryError(null);
+      try {
+        const [categoryRes, bestRes, viewRes] = await Promise.all([
+          api.get('/categories'),
+          api.get('/products/top-selling', { params: { limit: 10 } }),
+          api.get('/products/most-viewed', { params: { limit: 10 } })
+        ]);
+
+        if (!isMounted) return;
+        setCategories(categoryRes.data?.data?.items || []);
+        setBestSellers(bestRes.data?.data?.items || []);
+        setMostViewed(viewRes.data?.data?.items || []);
+      } catch (error) {
+        if (!isMounted) return;
+        setCategoryError('Không thể tải dữ liệu trang chủ.');
+      } finally {
+        if (isMounted) setLoadingTop(false);
+      }
+    };
+
+    fetchHomeData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const featuredSource = bestSellers.length > 0 ? bestSellers : mostViewed;
+  const saleSource = mostViewed.length > 0 ? mostViewed : bestSellers;
+  const featured = featuredSource.slice(0, 4);
+  const saleProducts = saleSource.slice(0, 6);
 
   return (
     <Layout>
@@ -120,16 +171,20 @@ const Home = () => {
               <div className="relative">
                 <div className="w-72 h-72 sm:w-80 sm:h-80 lg:w-96 lg:h-96 rounded-3xl overflow-hidden border border-white/10" style={{ boxShadow: '0 40px 80px rgba(0,0,0,0.4)' }}>
                   <img
-                    src={FEATURED[0]?.images[0]}
-                    alt={FEATURED[0]?.title}
+                    src={featured[0]?.images?.[0] || 'https://placehold.co/600x600'}
+                    alt={featured[0]?.title || 'Featured product'}
                     className="w-full h-full object-cover"
                     loading="eager"
                   />
                 </div>
                 {/* Floating badge */}
                 <div className="absolute -bottom-4 -left-4 bg-white rounded-2xl px-4 py-3 shadow-hover">
-                  <p className="font-poppins font-bold text-navy text-sm">{FEATURED[0]?.title.split(' ').slice(0, 3).join(' ')}</p>
-                  <p className="text-primary-500 font-bold text-lg">${FEATURED[0]?.price}</p>
+                  <p className="font-poppins font-bold text-navy text-sm">
+                    {featured[0]?.title ? featured[0].title.split(' ').slice(0, 3).join(' ') : 'Top Pick'}
+                  </p>
+                  <p className="text-primary-500 font-bold text-lg">
+                    {featured[0]?.price ? `$${featured[0].price}` : '—'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -146,19 +201,23 @@ const Home = () => {
               All <ChevronRight size={16} />
             </Link>
           </div>
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-            {MOCK_CATEGORIES.map(({ slug, label, icon }) => (
+          {categoryError ? (
+            <p className="text-gray-400 text-sm">{categoryError}</p>
+          ) : (
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+              {categories.map((category) => (
               <Link
-                key={slug}
-                to={`/shop?category=${slug}`}
-                id={`category-${slug}`}
+                key={category.id || category.slug}
+                to={`/shop?category=${category.slug}`}
+                id={`category-${category.slug}`}
                 className="group flex flex-col items-center gap-2.5 p-4 rounded-2xl border border-gray-100 hover:border-primary-500 hover:bg-primary-50 transition-all duration-200"
               >
-                <span className="text-3xl leading-none">{icon}</span>
-                <span className="font-inter font-medium text-xs text-gray-600 group-hover:text-primary-600 transition-colors text-center">{label}</span>
+                <span className="text-3xl leading-none">{categoryIcon(category.slug)}</span>
+                <span className="font-inter font-medium text-xs text-gray-600 group-hover:text-primary-600 transition-colors text-center">{category.name}</span>
               </Link>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -176,7 +235,7 @@ const Home = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {FEATURED.map((product) => (
+            {featured.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
@@ -220,7 +279,7 @@ const Home = () => {
             <div className="flex flex-col items-center lg:items-end gap-8">
               <FlashSaleCountdown endsAt={SALE_END} />
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {SALE_PRODUCTS.slice(0, 3).map((p) => (
+                {saleProducts.slice(0, 3).map((p) => (
                   <Link
                     key={p.id}
                     to={`/products/${p.slug}`}
@@ -234,6 +293,20 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      <HorizontalProductCarousel
+        title="Best Sellers"
+        products={bestSellers}
+        isLoading={loadingTop}
+        emptyMessage="No best sellers available yet."
+      />
+
+      <HorizontalProductCarousel
+        title="Most Viewed"
+        products={mostViewed}
+        isLoading={loadingTop}
+        emptyMessage="No most viewed products available yet."
+      />
 
       {/* ── 5. TRUST STRIP ───────────────────────────────── */}
       <section className="py-10 bg-white border-t border-gray-100">

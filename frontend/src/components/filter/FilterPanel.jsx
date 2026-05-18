@@ -1,6 +1,5 @@
 import React from 'react';
 import { Star } from 'lucide-react';
-import { MOCK_CATEGORIES } from '../../mock/categories';
 
 const SORT_OPTIONS = [
   { value: '',          label: 'Newest First' },
@@ -9,7 +8,18 @@ const SORT_OPTIONS = [
   { value: 'rating',    label: 'Best Rating' },
 ];
 
-const FilterPanel = ({ filters, onChange, onReset }) => {
+const categoryIcon = (slug) => {
+  const map = {
+    'dong-phuc': '👕',
+    'sach-giao-trinh': '📚',
+    'van-phong-pham': '✏️',
+    'qua-luu-niem': '🎁',
+    'do-dien-tu': '🖱️'
+  };
+  return map[slug] || '🛍️';
+};
+
+const FilterPanel = ({ filters, onChange, onReset, categories = [] }) => {
   const { category, priceMin, priceMax, rating, inStock } = filters;
 
   const set = (key, value) => onChange({ ...filters, [key]: value });
@@ -42,18 +52,18 @@ const FilterPanel = ({ filters, onChange, onReset }) => {
             />
             <span className="text-sm text-gray-600 group-hover:text-navy transition-colors">All Categories</span>
           </label>
-          {MOCK_CATEGORIES.map(({ slug, label, icon }) => (
-            <label key={slug} className="flex items-center gap-3 py-1.5 cursor-pointer group">
+          {categories.map((item) => (
+            <label key={item.id || item.slug} className="flex items-center gap-3 py-1.5 cursor-pointer group">
               <input
                 type="radio"
                 name="category"
-                value={slug}
-                checked={category === slug}
-                onChange={() => set('category', slug)}
+                value={item.slug}
+                checked={category === item.slug}
+                onChange={() => set('category', item.slug)}
                 className="accent-primary-500 w-4 h-4"
               />
               <span className="text-sm text-gray-600 group-hover:text-navy transition-colors flex items-center gap-1.5">
-                <span>{icon}</span> {label}
+                <span>{categoryIcon(item.slug)}</span> {item.name}
               </span>
             </label>
           ))}

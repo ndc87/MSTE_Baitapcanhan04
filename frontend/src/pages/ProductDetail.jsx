@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { ChevronRight, Package, RotateCcw, Shield, Star } from 'lucide-react';
+import { ChevronRight, Package, RotateCcw, Shield } from 'lucide-react';
 import Layout from '../components/layout/Layout';
 import ProductImageGallery from '../components/product/ProductImageGallery';
 import ProductCard from '../components/product/ProductCard';
@@ -10,7 +10,8 @@ import QuantitySelector from '../components/ui/QuantitySelector';
 import CTAButton from '../components/ui/CTAButton';
 import Badge from '../components/ui/Badge';
 import { addItem, openCart } from '../features/cart/cartSlice';
-import { MOCK_PRODUCTS } from '../mock/products';
+import SkeletonLoader from '../components/ui/SkeletonLoader';
+import api from '../services/api';
 
 const ProductDetail = () => {
   const { slug }    = useParams();
@@ -18,11 +19,66 @@ const ProductDetail = () => {
   const navigate    = useNavigate();
   const [qty, setQty]     = useState(1);
   const [activeTab, setActiveTab] = useState('description');
+  const [product, setProduct] = useState(null);
+  const [related, setRelated] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const product = MOCK_PRODUCTS.find((p) => p.slug === slug);
-  const related = MOCK_PRODUCTS.filter((p) => p.category === product?.category && p.id !== product?.id).slice(0, 4);
+  useEffect(() => {
+    let isMounted = true;
+    const fetchProduct = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const { data } = await api.get(`/products/${slug}`);
+        if (!isMounted) return;
+        setProduct(data?.data || null);
+      } catch (err) {
+        if (!isMounted) return;
+        setError('Không thể tải sản phẩm.');
+        setProduct(null);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    fetchProduct();
+    return () => {
+      isMounted = false;
+    };
+  }, [slug]);
 
-  if (!product) {
+  useEffect(() => {
+    if (!product?.category) return;
+    let isMounted = true;
+    const fetchRelated = async () => {
+      try {
+        const { data } = await api.get('/products', {
+          params: { category: product.category, limit: 5 }
+        });
+        if (!isMounted) return;
+        const items = data?.data?.items || [];
+        setRelated(items.filter((item) => item.id !== product.id).slice(0, 4));
+      } catch (err) {
+        if (isMounted) setRelated([]);
+      }
+    };
+    fetchRelated();
+    return () => {
+      isMounted = false;
+    };
+  }, [product?.category, product?.id]);
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="section-container py-20">
+          <SkeletonLoader variant="text" count={3} />
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error || !product) {
     return (
       <Layout>
         <div className="section-container py-20 text-center">
@@ -33,7 +89,7 @@ const ProductDetail = () => {
     );
   }
 
-  const { title, price, oldPrice, discount, stock, rating, reviewCount, images, tags, brand, description, specs, category } = product;
+  const { title, price, oldPrice, discount, stock, rating, reviewCount, images, tags = [], brand, description, specs, category } = product;
   const outOfStock = stock === 0;
   const lowStock   = stock > 0 && stock <= 5;
 

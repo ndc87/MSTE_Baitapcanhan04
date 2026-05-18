@@ -21,9 +21,13 @@ const productSchema = new mongoose.Schema({
   slug: { type: String, required: true, unique: true },
   description: { type: String },
   base_price: { type: Number, required: true },
+  stock_quantity: { type: Number, default: 0 },
   sku: { type: String, unique: true },
   is_active: { type: Boolean, default: true },
   average_rating: { type: Number, default: 0 },
+  review_count: { type: Number, default: 0 },
+  view_count: { type: Number, default: 0 },
+  tags: { type: [String], default: [] },
   variants: [variantSchema],
   media: [mediaSchema]
 }, {

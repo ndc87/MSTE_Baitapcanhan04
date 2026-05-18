@@ -1,13 +1,14 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { SlidersHorizontal, Search } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
 import Layout from '../components/layout/Layout';
 import FilterPanel from '../components/filter/FilterPanel';
 import FilterDrawer from '../components/filter/FilterDrawer';
 import ProductGrid from '../components/product/ProductGrid';
 import SearchBar from '../components/search/SearchBar';
 import EmptyState from '../components/ui/EmptyState';
-import { MOCK_PRODUCTS } from '../mock/products';
+import SkeletonLoader from '../components/ui/SkeletonLoader';
+import api from '../services/api';
 
 const SORT_OPTIONS = [
   { value: '',           label: 'Newest First'       },
@@ -34,7 +35,7 @@ function useDebounce(value, delay = 300) {
 }
 
 const Shop = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [sort,   setSort]   = useState('');
   const [filters, setFilters] = useState({
@@ -42,8 +43,19 @@ const Shop = () => {
     category: searchParams.get('category') || '',
   });
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [error, setError] = useState(null);
+  const [categories, setCategories] = useState([]);
+
+  const loadMoreRef = useRef(null);
 
   const debouncedSearch = useDebounce(searchQuery, 300);
+  const tagParam = searchParams.get('tag') || '';
 
   // Count active filters (for badge)
   const activeCount = useMemo(() => {
@@ -55,48 +67,112 @@ const Shop = () => {
     if (filters.inStock)   n++;
     return n;
   }, [filters]);
+  const activeCategoryLabel = useMemo(() => {
+    if (!filters.category) return '';
+    return categories.find((item) => item.slug === filters.category)?.name || filters.category;
+  }, [categories, filters.category]);
 
   const handleReset = useCallback(() => {
-    setFilters(DEFAULT_FILTERS);
+    setFilters({ ...DEFAULT_FILTERS });
     setSearchQuery('');
   }, []);
 
-  // Filter + sort products
-  const filteredProducts = useMemo(() => {
-    let list = [...MOCK_PRODUCTS];
-
-    // Search
-    if (debouncedSearch.trim()) {
-      const q = debouncedSearch.toLowerCase();
-      list = list.filter(
-        (p) => p.title.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.category.includes(q)
-      );
+  const fetchProducts = useCallback(async (nextPage, shouldReset = false) => {
+    if (shouldReset) {
+      setIsLoading(true);
+    } else {
+      setIsLoadingMore(true);
     }
+    setError(null);
 
-    // Category
-    if (filters.category) list = list.filter((p) => p.category === filters.category);
+    try {
+      const params = {
+        page: nextPage,
+        limit: 12,
+        sort,
+        search: debouncedSearch || undefined,
+        category: filters.category || undefined,
+        priceMin: filters.priceMin || undefined,
+        priceMax: filters.priceMax || undefined,
+        rating: filters.rating || undefined,
+        inStock: filters.inStock ? 'true' : undefined,
+        tag: tagParam || undefined
+      };
 
-    // Tags from URL
-    const tagParam = searchParams.get('tag');
-    if (tagParam) list = list.filter((p) => p.tags.includes(tagParam));
+      const { data } = await api.get('/products', { params });
+      const payload = data?.data;
+      const items = payload?.items || [];
+      const total = payload?.total || 0;
+      const totalPages = payload?.totalPages || 1;
 
-    // Price
-    if (filters.priceMin) list = list.filter((p) => p.price >= Number(filters.priceMin));
-    if (filters.priceMax) list = list.filter((p) => p.price <= Number(filters.priceMax));
+      if (shouldReset) {
+        setProducts(items);
+      } else {
+        setProducts((prev) => [...prev, ...items]);
+      }
+      setTotalCount(total);
+      setPage(nextPage);
+      setHasMore(nextPage < totalPages);
+    } catch (err) {
+      setError('Không thể tải danh sách sản phẩm.');
+      setHasMore(false);
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
+    }
+  }, [debouncedSearch, filters, sort, tagParam]);
 
-    // Rating
-    if (filters.rating) list = list.filter((p) => p.rating >= filters.rating);
+  useEffect(() => {
+    let isMounted = true;
+    const fetchCategories = async () => {
+      try {
+        const { data } = await api.get('/categories');
+        if (!isMounted) return;
+        setCategories(data?.data?.items || []);
+      } catch (err) {
+        if (isMounted) setCategories([]);
+      }
+    };
+    fetchCategories();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
-    // In stock
-    if (filters.inStock) list = list.filter((p) => p.stock > 0);
+  useEffect(() => {
+    setPage(1);
+    setHasMore(true);
+    fetchProducts(1, true);
+  }, [fetchProducts]);
 
-    // Sort
-    if (sort === 'price-asc')  list.sort((a, b) => a.price - b.price);
-    if (sort === 'price-desc') list.sort((a, b) => b.price - a.price);
-    if (sort === 'rating')     list.sort((a, b) => b.rating - a.rating);
+  useEffect(() => {
+    const nextCategory = searchParams.get('category') || '';
+    const nextSearch = searchParams.get('search') || '';
 
-    return list;
-  }, [debouncedSearch, filters, sort, searchParams]);
+    if (nextCategory !== filters.category) {
+      setFilters((prev) => ({ ...prev, category: nextCategory }));
+    }
+    if (nextSearch !== searchQuery) {
+      setSearchQuery(nextSearch);
+    }
+  }, [searchParams, filters.category, searchQuery]);
+
+  useEffect(() => {
+    const target = loadMoreRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore && !isLoading) {
+          fetchProducts(page + 1);
+        }
+      },
+      { rootMargin: '200px' }
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [fetchProducts, hasMore, isLoading, isLoadingMore, page]);
 
   return (
     <Layout>
@@ -104,14 +180,14 @@ const Shop = () => {
         {/* Page header */}
         <div className="mb-6">
           <h1 className="font-poppins font-bold text-2xl text-navy">Shop All Products</h1>
-          <p className="text-gray-400 text-sm mt-1">{filteredProducts.length} products found</p>
+            <p className="text-gray-400 text-sm mt-1">{totalCount} products found</p>
         </div>
 
         <div className="flex gap-7 items-start">
           {/* ── Desktop Sidebar ── */}
           <div className="hidden lg:block w-64 shrink-0">
-            <FilterPanel filters={filters} onChange={setFilters} onReset={handleReset} />
-          </div>
+              <FilterPanel filters={filters} onChange={setFilters} onReset={handleReset} categories={categories} />
+            </div>
 
           {/* ── Main content ── */}
           <div className="flex-1 min-w-0">
@@ -140,7 +216,7 @@ const Shop = () => {
               <div className="flex flex-wrap gap-2 mb-5">
                 {filters.category && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-50 border border-primary-200 rounded-full text-xs font-medium text-primary-700">
-                    {filters.category}
+                    {activeCategoryLabel}
                     <button onClick={() => setFilters(f => ({ ...f, category: '' }))} className="hover:text-red-500">×</button>
                   </span>
                 )}
@@ -160,8 +236,28 @@ const Shop = () => {
             )}
 
             {/* Product grid or empty state */}
-            {filteredProducts.length > 0 ? (
-              <ProductGrid products={filteredProducts} isLoading={false} />
+            {isLoading && products.length === 0 ? (
+              <ProductGrid products={[]} isLoading />
+            ) : error ? (
+              <EmptyState
+                title="Unable to load products"
+                description={error}
+                actionLabel="Try Again"
+                onAction={() => fetchProducts(1, true)}
+              />
+            ) : products.length > 0 ? (
+              <>
+                <ProductGrid products={products} isLoading={isLoading && products.length === 0} />
+                {isLoadingMore && (
+                  <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                    <SkeletonLoader variant="card" count={4} />
+                  </div>
+                )}
+                <div ref={loadMoreRef} className="h-8" />
+                {!hasMore && products.length > 0 && (
+                  <p className="text-center text-xs text-gray-400 mt-4">You have reached the end.</p>
+                )}
+              </>
             ) : (
               <EmptyState
                 title="No products found"
@@ -197,6 +293,7 @@ const Shop = () => {
         onChange={setFilters}
         onReset={handleReset}
         activeCount={activeCount}
+        categories={categories}
       />
     </Layout>
   );

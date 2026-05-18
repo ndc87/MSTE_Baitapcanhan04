@@ -65,22 +65,35 @@ const seedData = async () => {
     // 5. Seed Products (5 sản phẩm)
     const products = await Product.insertMany([
       { 
-        name: 'Áo thun UTE Blue', slug: 'ao-thun-ute-blue', base_price: 120000, shop: shop._id, category: categories[0]._id, sku: 'UTE-AT-01', 
+        name: 'Áo thun UTE Blue', slug: 'ao-thun-ute-blue', base_price: 120000, shop: shop._id, category: categories[0]._id, sku: 'UTE-AT-01',
+        description: 'Áo thun đồng phục chất liệu cotton thoáng mát, phù hợp hoạt động học tập và ngoại khóa.',
         variants: [{ variant_name: 'Size', variant_value: 'M', stock_quantity: 50 }, { variant_name: 'Size', variant_value: 'L', stock_quantity: 40 }],
-        media: [{ media_type: 'image', media_url: 'https://placehold.co/400x400' }]
+        average_rating: 4.6, review_count: 120, view_count: 320, tags: ['featured', 'sale'],
+        media: [{ media_type: 'image', media_url: 'https://placehold.co/400x400', sort_order: 1 }]
       },
       { 
-        name: 'Giáo trình Triết học', slug: 'giao-trinh-triet', base_price: 45000, shop: shop._id, category: categories[1]._id, sku: 'UTE-GT-01', stock_quantity: 100,
-        media: [{ media_type: 'image', media_url: 'https://placehold.co/400x400' }]
+        name: 'Giáo trình Triết học', slug: 'giao-trinh-triet', base_price: 45000, shop: shop._id, category: categories[1]._id, sku: 'UTE-GT-01',
+        description: 'Giáo trình Triết học dành cho sinh viên năm nhất, cập nhật nội dung mới nhất.',
+        stock_quantity: 100, average_rating: 4.2, review_count: 54, view_count: 210, tags: ['new'],
+        media: [{ media_type: 'image', media_url: 'https://placehold.co/400x400', sort_order: 1 }]
       },
       { 
-        name: 'Bút bi Logo UTE', slug: 'but-bi-ute', base_price: 5000, shop: shop._id, category: categories[2]._id, sku: 'UTE-VP-01', stock_quantity: 500 
+        name: 'Bút bi Logo UTE', slug: 'but-bi-ute', base_price: 5000, shop: shop._id, category: categories[2]._id, sku: 'UTE-VP-01',
+        description: 'Bút bi logo UTE viết trơn, mực đậm, phù hợp cho sinh viên.',
+        stock_quantity: 500, average_rating: 4.5, review_count: 230, view_count: 410, tags: ['hot', 'featured'],
+        media: [{ media_type: 'image', media_url: 'https://placehold.co/400x400', sort_order: 1 }]
       },
       { 
-        name: 'Gấu bông UTE 20cm', slug: 'gau-bong-ute', base_price: 85000, shop: shop._id, category: categories[3]._id, sku: 'UTE-QL-01', stock_quantity: 20 
+        name: 'Gấu bông UTE 20cm', slug: 'gau-bong-ute', base_price: 85000, shop: shop._id, category: categories[3]._id, sku: 'UTE-QL-01',
+        description: 'Gấu bông lưu niệm mềm mại, quà tặng ý nghĩa cho sinh viên.',
+        stock_quantity: 20, average_rating: 4.8, review_count: 75, view_count: 290, tags: ['sale'],
+        media: [{ media_type: 'image', media_url: 'https://placehold.co/400x400', sort_order: 1 }]
       },
       { 
-        name: 'Chuột không dây Logitech', slug: 'chuot-logitech', base_price: 250000, shop: shop._id, category: categories[4]._id, sku: 'UTE-DT-01', stock_quantity: 15 
+        name: 'Chuột không dây Logitech', slug: 'chuot-logitech', base_price: 250000, shop: shop._id, category: categories[4]._id, sku: 'UTE-DT-01',
+        description: 'Chuột không dây nhỏ gọn, kết nối ổn định, phù hợp học tập và làm việc.',
+        stock_quantity: 15, average_rating: 4.7, review_count: 98, view_count: 360, tags: ['featured'],
+        media: [{ media_type: 'image', media_url: 'https://placehold.co/400x400', sort_order: 1 }]
       }
     ]);
 
