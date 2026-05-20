@@ -145,17 +145,21 @@ const Shop = () => {
     fetchProducts(1, true);
   }, [fetchProducts]);
 
+  // Sync URL search params → component state (one-way: URL → state only)
+  const prevParamsRef = useRef({ category: searchParams.get('category') || '', search: searchParams.get('search') || '' });
   useEffect(() => {
     const nextCategory = searchParams.get('category') || '';
     const nextSearch = searchParams.get('search') || '';
 
-    if (nextCategory !== filters.category) {
+    if (nextCategory !== prevParamsRef.current.category) {
       setFilters((prev) => ({ ...prev, category: nextCategory }));
+      prevParamsRef.current.category = nextCategory;
     }
-    if (nextSearch !== searchQuery) {
+    if (nextSearch !== prevParamsRef.current.search) {
       setSearchQuery(nextSearch);
+      prevParamsRef.current.search = nextSearch;
     }
-  }, [searchParams, filters.category, searchQuery]);
+  }, [searchParams]);
 
   useEffect(() => {
     const target = loadMoreRef.current;
