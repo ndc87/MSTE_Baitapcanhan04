@@ -49,11 +49,11 @@ const SALE_END = Date.now() + 6 * 3600 * 1000; // 6 hours from now
 
 const categoryIcon = (slug) => {
   const map = {
-    'dong-phuc': '👕',
-    'sach-giao-trinh': '📚',
-    'van-phong-pham': '✏️',
-    'qua-luu-niem': '🎁',
-    'do-dien-tu': '🖱️'
+    'giay-da-bong': '⚽',
+    'day-giay': '🪢',
+    've-sinh-giay': '🧴',
+    'bang-quan-bao-ve': '🩹',
+    'quan-ao-da-bong': '👕'
   };
   return map[slug] || '🛍️';
 };
@@ -125,16 +125,16 @@ const Home = () => {
             <div className="hero-animate">
               <div className="inline-flex items-center gap-2 bg-primary-500/10 border border-primary-500/30 rounded-full px-4 py-1.5 mb-6">
                 <Zap size={14} className="text-primary-500" />
-                <span className="text-primary-400 text-sm font-medium">New arrivals every week</span>
+                <span className="text-primary-400 text-sm font-medium">Mẫu mới mỗi tuần ⚡</span>
               </div>
 
               <h1 className="font-poppins font-bold text-white mb-5" style={{ fontSize: 'clamp(36px, 5vw, 56px)', lineHeight: '1.08', letterSpacing: '-0.02em' }}>
-                Tech That Fits<br />
-                <span className="text-primary-500">Your Lifestyle.</span>
+                Giày Đá Bóng<br />
+                <span className="text-primary-500">Chính Hãng.</span>
               </h1>
 
               <p className="text-gray-300 text-lg leading-relaxed mb-8 max-w-lg">
-                Premium gadgets, accessories, and lifestyle gear — curated for modern living. Fast shipping, easy returns.
+                Nike, Adidas, Puma, Mizuno — đầy đủ phụ kiện bóng đá. Giao hàng nhanh, đổi trả dễ dàng.
               </p>
 
               <div className="flex flex-wrap gap-4">
@@ -144,7 +144,7 @@ const Home = () => {
                   size="lg"
                   variant="primary"
                 >
-                  Shop Now <ArrowRight size={18} />
+                  Mua Ngay <ArrowRight size={18} />
                 </CTAButton>
                 <CTAButton
                   id="hero-sale"
@@ -152,12 +152,12 @@ const Home = () => {
                   size="lg"
                   variant="secondary"
                 >
-                  View Deals
+                  Giảm Giá Hot 🔥
                 </CTAButton>
               </div>
 
               <div className="flex gap-8 mt-10">
-                {[['12K+', 'Happy Customers'], ['500+', 'Products'], ['4.9★', 'Avg Rating']].map(([val, label]) => (
+                {[['5K+', 'Khách hàng'], ['56+', 'Sản phẩm'], ['4.8★', 'Đánh giá']].map(([val, label]) => (
                   <div key={label}>
                     <p className="font-poppins font-bold text-white text-xl">{val}</p>
                     <p className="text-gray-400 text-xs mt-0.5">{label}</p>

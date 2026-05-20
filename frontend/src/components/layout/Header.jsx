@@ -72,9 +72,9 @@ const Header = () => {
         {/* Flash sale bar */}
         <div className="bg-primary-500 text-white text-center py-2 px-4 text-xs font-inter font-medium tracking-wide">
           <Zap size={12} className="inline mr-1 -mt-0.5" />
-          Flash Sale — Up to 50% off on selected tech.{' '}
+          Flash Sale — Giảm đến 50% giày đá bóng chính hãng.{' '}
           <Link to="/shop?tag=sale" className="underline font-semibold hover:text-white/80 transition-colors">
-            Shop Now →
+            Mua ngay →
           </Link>
         </div>
 
@@ -87,7 +87,7 @@ const Header = () => {
                 <span className="text-white font-poppins font-black text-sm">U</span>
               </div>
               <span className="font-poppins font-bold text-white text-lg leading-none">
-                UTE<span className="text-primary-500">Shop</span>
+                Boot<span className="text-primary-500">Zone</span>
               </span>
             </Link>
 
