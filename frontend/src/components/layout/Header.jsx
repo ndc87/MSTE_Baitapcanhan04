@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { ShoppingCart, Search, User, Menu, X, Zap } from 'lucide-react';
+import { ShoppingCart, Search, User, Menu, X, Zap, Heart } from 'lucide-react';
 import { openCart } from '../../features/cart/cartSlice';
 
 const Header = () => {
@@ -132,6 +132,18 @@ const Header = () => {
                   </span>
                 )}
               </button>
+
+              {/* Wishlist */}
+              {user && (
+                <Link
+                  to="/wishlist"
+                  id="header-wishlist-btn"
+                  className="relative w-10 h-10 flex items-center justify-center text-gray-300 hover:text-red-400 hover:bg-navy-light rounded-lg transition-colors"
+                  aria-label="Wishlist"
+                >
+                  <Heart size={20} />
+                </Link>
+              )}
 
               {/* User */}
               {user ? (

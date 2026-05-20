@@ -11,6 +11,7 @@ const CartPage      = lazy(() => import('./pages/CartPage'));
 const CheckoutPage  = lazy(() => import('./pages/CheckoutPage'));
 const OrderHistoryPage = lazy(() => import('./pages/OrderHistoryPage'));
 const OrderTrackingPage = lazy(() => import('./pages/OrderTrackingPage'));
+const WishlistPage = lazy(() => import('./pages/WishlistPage'));
 
 // Auth pages (existing — not lazy, smaller)
 import Register      from './pages/Register';
@@ -60,6 +61,9 @@ function App() {
         } />
         <Route path="/orders/:id" element={
           <Suspense fallback={<PageLoader />}><OrderTrackingPage /></Suspense>
+        } />
+        <Route path="/wishlist" element={
+          <Suspense fallback={<PageLoader />}><WishlistPage /></Suspense>
         } />
 
         {/* Auth pages */}
