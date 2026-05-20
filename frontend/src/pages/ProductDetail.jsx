@@ -9,7 +9,7 @@ import StarRating from '../components/ui/StarRating';
 import QuantitySelector from '../components/ui/QuantitySelector';
 import CTAButton from '../components/ui/CTAButton';
 import Badge from '../components/ui/Badge';
-import { addItem, openCart } from '../features/cart/cartSlice';
+import { addToCart, openCart } from '../features/cart/cartSlice';
 import SkeletonLoader from '../components/ui/SkeletonLoader';
 import api from '../services/api';
 
@@ -94,12 +94,12 @@ const ProductDetail = () => {
   const lowStock   = stock > 0 && stock <= 5;
 
   const handleAddToCart = () => {
-    dispatch(addItem({ ...product, quantity: qty }));
+    dispatch(addToCart({ productId: product.id || product._id, quantity: qty }));
     dispatch(openCart());
   };
 
   const handleBuyNow = () => {
-    dispatch(addItem({ ...product, quantity: qty }));
+    dispatch(addToCart({ productId: product.id || product._id, quantity: qty }));
     navigate('/cart');
   };
 

@@ -22,7 +22,7 @@ const orderSchema = new mongoose.Schema({
   coupon: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
   status: { 
     type: String, 
-    enum: ['pending', 'confirmed', 'shipping', 'completed', 'cancelled', 'refunded'],
+    enum: ['pending', 'confirmed', 'preparing', 'shipping', 'completed', 'cancelled', 'cancel_requested', 'refunded'],
     default: 'pending' 
   },
   total_base: { type: Number, required: true },
@@ -34,6 +34,13 @@ const orderSchema = new mongoose.Schema({
     enum: ['pending', 'paid', 'failed', 'refunded'], 
     default: 'pending' 
   },
+  payment_method: {
+    type: String,
+    enum: ['cod', 'momo', 'zalopay', 'vnpay'],
+    default: 'cod'
+  },
+  shipping_address: { type: String },
+  shipping_phone: { type: String },
   coin_spent: { type: Number, default: 0 },
   coin_earned: { type: Number, default: 0 },
   items: [orderItemSchema],

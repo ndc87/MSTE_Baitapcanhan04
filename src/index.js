@@ -3,7 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
-
+const cron = require('node-cron');
+const Order = require('./models/Order');
 const requestId = require('./middleware/requestId');
 const rateLimit = require('express-rate-limit');
 
@@ -32,6 +33,8 @@ app.use('/api', limiter);
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/categories', require('./routes/categoryRoutes'));
+app.use('/api/cart', require('./routes/cartRoutes'));
+app.use('/api/orders', require('./routes/orderRoutes'));
 
 // Global Error Handler
 app.use((err, req, res, next) => {
@@ -45,6 +48,25 @@ app.use((err, req, res, next) => {
     requestId: req.id,
     timestamp: Math.floor(Date.now() / 1000)
   });
+});
+
+// Cron job: Chạy mỗi phút để cập nhật đơn hàng pending -> confirmed sau 30 phút
+cron.schedule('* * * * *', async () => {
+  try {
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+    const result = await Order.updateMany(
+      { status: 'pending', createdAt: { $lte: thirtyMinutesAgo } },
+      { 
+        $set: { status: 'confirmed' },
+        $push: { history: { status: 'confirmed', note: 'Tự động xác nhận sau 30 phút' } }
+      }
+    );
+    if (result.modifiedCount > 0) {
+      console.log(`[CRON] Đã tự động xác nhận ${result.modifiedCount} đơn hàng`);
+    }
+  } catch (error) {
+    console.error('[CRON] Lỗi khi cập nhật trạng thái đơn hàng:', error);
+  }
 });
 
 const PORT = process.env.PORT || 5000;

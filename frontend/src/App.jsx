@@ -7,6 +7,10 @@ import './App.css';
 const Home          = lazy(() => import('./pages/Home'));
 const Shop          = lazy(() => import('./pages/Shop'));
 const ProductDetail = lazy(() => import('./pages/ProductDetail'));
+const CartPage      = lazy(() => import('./pages/CartPage'));
+const CheckoutPage  = lazy(() => import('./pages/CheckoutPage'));
+const OrderHistoryPage = lazy(() => import('./pages/OrderHistoryPage'));
+const OrderTrackingPage = lazy(() => import('./pages/OrderTrackingPage'));
 
 // Auth pages (existing — not lazy, smaller)
 import Register      from './pages/Register';
@@ -44,6 +48,18 @@ function App() {
         } />
         <Route path="/products/:slug" element={
           <Suspense fallback={<PageLoader />}><ProductDetail /></Suspense>
+        } />
+        <Route path="/cart" element={
+          <Suspense fallback={<PageLoader />}><CartPage /></Suspense>
+        } />
+        <Route path="/checkout" element={
+          <Suspense fallback={<PageLoader />}><CheckoutPage /></Suspense>
+        } />
+        <Route path="/orders" element={
+          <Suspense fallback={<PageLoader />}><OrderHistoryPage /></Suspense>
+        } />
+        <Route path="/orders/:id" element={
+          <Suspense fallback={<PageLoader />}><OrderTrackingPage /></Suspense>
         } />
 
         {/* Auth pages */}

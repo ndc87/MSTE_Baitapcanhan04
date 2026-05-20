@@ -45,12 +45,16 @@ const seedData = async () => {
     });
 
     // 3. Seed Users (5 người dùng với các vai trò khác nhau)
+    const bcrypt = require('bcryptjs');
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash('password123', salt);
+
     const users = await User.insertMany([
-      { full_name: 'Admin System', email: 'admin@uteshop.vn', password: 'password123', role: 'admin', status: 'active' },
-      { full_name: 'Vendor Nguyễn Văn A', email: 'vendor@gmail.com', password: 'password123', role: 'vendor', status: 'active' },
-      { full_name: 'Customer Trần Thị B', email: 'customer1@gmail.com', password: 'password123', role: 'customer', status: 'active', coin_balance: 500, addresses: [{ label: 'KTX Khu A', recipient_name: 'Trần Thị B', recipient_phone: '0901234567', street_address: 'Phòng 402, KTX Khu A' }] },
-      { full_name: 'Customer Lê Văn C', email: 'customer2@gmail.com', password: 'password123', role: 'customer', status: 'active', coin_balance: 200 },
-      { full_name: 'Shipper Hoàng Văn D', email: 'shipper@gmail.com', password: 'password123', role: 'shipper', status: 'active', shipper_details: { vehicle_type: 'Xe máy', license_plate: '59-X1 123.45', is_available: true } }
+      { full_name: 'Admin System', email: 'admin@uteshop.vn', password: hashedPassword, role: 'admin', status: 'active' },
+      { full_name: 'Vendor Nguyễn Văn A', email: 'vendor@gmail.com', password: hashedPassword, role: 'vendor', status: 'active' },
+      { full_name: 'Customer Trần Thị B', email: 'customer1@gmail.com', password: hashedPassword, role: 'customer', status: 'active', coin_balance: 500, addresses: [{ label: 'KTX Khu A', recipient_name: 'Trần Thị B', recipient_phone: '0901234567', street_address: 'Phòng 402, KTX Khu A' }] },
+      { full_name: 'Customer Lê Văn C', email: 'customer2@gmail.com', password: hashedPassword, role: 'customer', status: 'active', coin_balance: 200 },
+      { full_name: 'Shipper Hoàng Văn D', email: 'shipper@gmail.com', password: hashedPassword, role: 'shipper', status: 'active', shipper_details: { vehicle_type: 'Xe máy', license_plate: '59-X1 123.45', is_available: true } }
     ]);
 
     // 4. Seed Categories (5 danh mục)

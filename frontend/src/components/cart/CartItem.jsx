@@ -1,11 +1,11 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { Trash2, Minus, Plus } from 'lucide-react';
-import { removeItem, updateQuantity } from '../../features/cart/cartSlice';
+import { removeCartItem, updateCartItem } from '../../features/cart/cartSlice';
 
 const CartItem = ({ item }) => {
   const dispatch = useDispatch();
-  const { id, title, price, images, quantity, stock } = item;
+  const { _id, id, title, price, images, quantity, stock } = item;
 
   return (
     <div className="flex gap-4 py-4 border-b border-gray-100 last:border-0">
@@ -23,7 +23,7 @@ const CartItem = ({ item }) => {
         <div className="flex items-center justify-between mt-3">
           <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
             <button
-              onClick={() => dispatch(quantity === 1 ? removeItem(id) : updateQuantity({ id, quantity: quantity - 1 }))}
+              onClick={() => dispatch(quantity === 1 ? removeCartItem(_id) : updateCartItem({ itemId: _id, quantity: quantity - 1 }))}
               className="w-8 h-8 flex items-center justify-center hover:bg-gray-50 transition-colors text-gray-500"
               aria-label="Decrease"
             >
@@ -33,7 +33,7 @@ const CartItem = ({ item }) => {
               {quantity}
             </span>
             <button
-              onClick={() => dispatch(updateQuantity({ id, quantity: Math.min(quantity + 1, stock) }))}
+              onClick={() => dispatch(updateCartItem({ itemId: _id, quantity: Math.min(quantity + 1, stock) }))}
               disabled={quantity >= stock}
               className="w-8 h-8 flex items-center justify-center hover:bg-gray-50 transition-colors text-gray-500 disabled:opacity-30"
               aria-label="Increase"
@@ -42,7 +42,7 @@ const CartItem = ({ item }) => {
             </button>
           </div>
           <button
-            onClick={() => dispatch(removeItem(id))}
+            onClick={() => dispatch(removeCartItem(_id))}
             className="text-gray-300 hover:text-red-400 transition-colors"
             aria-label="Remove item"
           >

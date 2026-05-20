@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, ShoppingBag } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { closeCart } from '../../features/cart/cartSlice';
 import CartItem from './CartItem';
 import CartSummary from './CartSummary';
@@ -8,10 +9,12 @@ import EmptyState from '../ui/EmptyState';
 
 const CartDrawer = () => {
   const dispatch   = useDispatch();
+  const navigate   = useNavigate();
   const { items, isOpen } = useSelector((state) => state.cart);
 
   const handleCheckout = () => {
-    alert('Checkout — Phase 2 feature. Connect to backend order flow.');
+    dispatch(closeCart());
+    navigate('/checkout');
   };
 
   return (

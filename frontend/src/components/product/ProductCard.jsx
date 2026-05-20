@@ -4,7 +4,7 @@ import { ShoppingCart } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import Badge from '../ui/Badge';
 import StarRating from '../ui/StarRating';
-import { addItem } from '../../features/cart/cartSlice';
+import { addToCart } from '../../features/cart/cartSlice';
 
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
@@ -20,7 +20,7 @@ const ProductCard = ({ product }) => {
     e.preventDefault();
     e.stopPropagation();
     if (!isOutOfStock) {
-      dispatch(addItem({ ...product, quantity: 1 }));
+      dispatch(addToCart({ productId: product.id || product._id, quantity: 1 }));
     }
   };
 
